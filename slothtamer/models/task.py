@@ -2,7 +2,7 @@ from datetime import datetime as dt
 from datetime import timezone as tz
 from sqlalchemy.orm import validates
 
-from app import db
+from slothtamer.lib.database import db
 
 
 class Task(db.Model):

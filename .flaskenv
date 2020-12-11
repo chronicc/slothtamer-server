@@ -1,0 +1,2 @@
+FLASK_APP=slothtamer
+FLASK_ENV=development

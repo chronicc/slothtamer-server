@@ -2,7 +2,7 @@ from flask import jsonify, request, make_response
 from flask.views import MethodView
 from flask_login import login_required
 
-from app.models.task import Task
+from slothtamer.models.task import Task
 
 
 class TasksView(MethodView):

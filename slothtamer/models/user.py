@@ -2,7 +2,7 @@ from datetime import datetime as dt
 from datetime import timezone as tz
 from flask_login import UserMixin
 
-from app import db
+from slothtamer.lib.database import db
 
 
 class User(db.Model, UserMixin):
