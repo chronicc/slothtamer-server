@@ -1,1 +1,4 @@
+coverage
+pytest
 python-dotenv
+
