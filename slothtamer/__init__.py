@@ -77,6 +77,6 @@ def create_app(config=None, instance_path=None):
     # Routes
     app.add_url_rule('/', view_func=IndexView.as_view('index'))
     app.add_url_rule('/tasks/', view_func=TasksView.as_view('tasks'))
-    app.add_url_rule('/tasks/<int:id>/', view_func=TasksView.as_view('tasks_id'))
+    app.add_url_rule('/tasks/<int:task_id>/', view_func=TasksView.as_view('tasks_id'))
 
     return app

@@ -1,24 +1,25 @@
-""" Test the task view. """
+""" Test the task model and view. """
 
 import json
 
+from slothtamer.lib.database import db
 from slothtamer.models.task import Task
 
 
-def test_task_create_minimal(client, app):
-    """ Test if a task can be created with minimal parameters. """
-    title = 'Test task object'
-    response = client.post('/tasks/', data={'title': title})
-    data = json.loads(response.get_data().decode('utf-8'))
-    assert response.status_code == 200
-    assert data == 'OK'
-    with app.app_context():
-        assert Task.query.filter_by(title=title).first() is not None
+# def test_task_repr(client, app):
+#     """ Test if the model is represented in the correct form. """
+#     with app.app_context():
+#         task = Task.query.first()
+#         assert str(task) == '<Task(id=\'1\', title=\'Test task object\', status=\'0\')>'
 
 
-def test_task_create_wrong(client, app):
-    """ Test if the task view is safe against wrong methods."""
-    title = 'Don\'t accept wrong method'
-    client.get('/tasks/', data={'title': title})
+def test_task_to_dict(client, app):
+    """ Test if the model is returned as dict. """
     with app.app_context():
-        assert Task.query.filter_by(title=title).first() is None
+        db.session.add(Task(title='Example Task'))
+        db.session.commit()
+        data = Task.query.first().to_dict()
+        assert isinstance(data, dict)
+        assert data['id'] == 1
+        assert data['title'] == 'Example Task'
+        assert data['status'] == 0

@@ -4,9 +4,8 @@ import os
 import shutil
 
 from slothtamer import config_set_default, create_app
-
-
-DATABASE_PATH = 'sqlite:///:memory:'
+from slothtamer.lib.database import db
+from slothtamer.models.user import User
 
 
 def test_environment_configuration():
@@ -19,7 +18,7 @@ def test_without_config():
     """ Test application creation without config parameter. """
     app = create_app()
     assert app.config['API_KEY'] == 'insecure'
-    assert app.config['SQLALCHEMY_DATABASE_URI'] == DATABASE_PATH
+    assert app.config['SQLALCHEMY_DATABASE_URI'] == 'sqlite:///:memory:'
     assert not app.testing
     shutil.rmtree(app.instance_path)
 
@@ -29,10 +28,12 @@ def test_with_config():
     config = {
         'API_KEY': 'testing',
         'TESTING': True,
-        'SQLALCHEMY_DATABASE_URI': DATABASE_PATH,
+        'SQLALCHEMY_DATABASE_URI': 'sqlite:////tmp/instance/slothtamer.db',
         'SQLALCHEMY_TRACK_MODIFICATIONS': False,
     }
-    app = create_app(config)
+    app = create_app(config, instance_path='/tmp/instance')
+    del app
+    app = create_app(config, instance_path='/tmp/instance')
     assert app.config['API_KEY'] == 'testing'
-    assert app.config['SQLALCHEMY_DATABASE_URI'] == DATABASE_PATH
+    assert app.config['SQLALCHEMY_DATABASE_URI'] == 'sqlite:////tmp/instance/slothtamer.db'
     assert app.testing

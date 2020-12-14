@@ -6,6 +6,8 @@ import pytest
 from flask.testing import FlaskClient
 
 from slothtamer import create_app
+from slothtamer.lib.database import db
+from slothtamer.models.task import Task
 
 
 class TestClient(FlaskClient):

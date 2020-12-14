@@ -66,7 +66,6 @@ class Task(db.Model):
             title = str(title)
         except ValueError as exception:
             raise AssertionError('Title must be of type string') from exception
-            #raise AssertionError from e
         return title
 
     @classmethod
@@ -79,6 +78,5 @@ class Task(db.Model):
             status = int(status)
         except ValueError as exception:
             raise AssertionError('Status must be of type integer') from exception
-            #raise AssertionError from e
         assert status >= 0, 'Status must be a positive integer'
         return status

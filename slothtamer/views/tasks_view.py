@@ -16,7 +16,10 @@ class TasksView(MethodView):
         """ Return one or multiple tasks. """
         if task_id is None:
             return make_response(jsonify([row.to_dict() for row in Task.query.all()]))
-        return make_response(jsonify(Task.read(task_id).to_dict()))
+        try:
+            return make_response(jsonify(Task.read(task_id).to_dict()))
+        except AttributeError:
+            return make_response(jsonify('No task with id \'%s\' found' % task_id), 404)
 
     @classmethod
     @login_required
