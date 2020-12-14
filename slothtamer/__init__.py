@@ -11,26 +11,32 @@ from slothtamer.views.tasks_view import TasksView
 
 
 def config_set_default(param, default):
+    """ Return the value of an environment variable or default if not defined."""
     if param in os.environ:
         return os.environ[param]
     else:
         return default
 
 
-def create_app():
+def create_app(config=None):
+    """ Create an instance of the application. """
 
     # Application
     app = Flask(__name__)
-    app.config.from_mapping(
-        API_KEY=config_set_default('SLOTHTAMER_API_KEY', 'insecure'),
-        DEBUG=config_set_default('SLOTHTAMER_DEBUG', True),
-        SECRET_KEY=config_set_default('SLOTHTAMER_SECRET_KEY', os.urandom(16)),
-        SQLALCHEMY_DATABASE_URI=config_set_default(
-            'SLOTHTAMER_DATABASE_URI', 'sqlite:///%s/slothtamer.db' % app.instance_path),
-        SQLALCHEMY_TRACK_MODIFICATIONS=False
-    )
 
-    ## Create instance path
+    if config is None:
+        config_mapping = {
+            'API_KEY': config_set_default('SLOTHTAMER_API_KEY', 'insecure'),
+            'DEBUG': config_set_default('SLOTHTAMER_DEBUG', True),
+            'SECRET_KEY': config_set_default('SLOTHTAMER_SECRET_KEY', os.urandom(16)),
+            'SQLALCHEMY_DATABASE_URI': config_set_default(
+                'SLOTHTAMER_DATABASE_URI', 'sqlite:///%s/slothtamer.db' % app.instance_path),
+            'SQLALCHEMY_TRACK_MODIFICATIONS': False,
+        }
+    else:
+        config_mapping = config
+    app.config.from_mapping(config_mapping)
+
     print('INFO: Checking for application instance path: %s' % app.instance_path)
     try:
         os.makedirs(app.instance_path)
@@ -38,7 +44,6 @@ def create_app():
         print('INFO: Application instance path already existing.')
     else:
         print('INFO: Application instance path created.')
-
 
     # Database
     db.init_app(app)
@@ -51,21 +56,19 @@ def create_app():
             db.session.add(User(api_key=app.config['API_KEY']))
             db.session.commit()
         print('INFO: Database initialized.')
-    
 
     # Authorization
     auth = LoginManager()
     auth.init_app(app)
+
     @auth.request_loader
     def request_loader(request):
         api_key = request.headers.get('Authorization')
         return User.query.filter_by(api_key=api_key).first()
 
-
     # Routes
     app.add_url_rule('/', view_func=IndexView.as_view('index'))
     app.add_url_rule('/tasks/', view_func=TasksView.as_view('tasks'))
     app.add_url_rule('/tasks/<int:id>/', view_func=TasksView.as_view('tasks_id'))
-
 
     return app

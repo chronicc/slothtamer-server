@@ -1,36 +1,38 @@
-import os
 import pytest
-import tempfile
+
+from flask.testing import FlaskClient
 
 from slothtamer import create_app
-from slothtamer.lib.database import db
+
+
+class TestClient(FlaskClient):
+    """ Special test client for local testing. """
+    def open(self, *args, **kwargs):
+        kwargs['headers'] = dict(Authorization='testing')
+        return super().open(*args, **kwargs)
 
 
 @pytest.fixture
 def app():
-    # TODO: Setup app for testing
-    db_fd, db_path = tempfile.mkstemp()
-
+    """ Create an application instance for local testing. """
     app = create_app({
+        'API_KEY': 'testing',
         'TESTING': True,
-        'DATABASE': db_path,
+        'SQLALCHEMY_DATABASE_URI': 'sqlite:///:memory:',
+        'SQLALCHEMY_TRACK_MODIFICATIONS': False,
     })
 
-    with app.app_context():
-        init_db()
-        get_db().executescript(_data_sql)
-
     yield app
-
-    os.close(db_fd)
-    os.unlink(db_path)
 
 
 @pytest.fixture
 def client(app):
+    """ Provide a simulated http client for local testing. """
+    app.test_client_class = TestClient
     return app.test_client()
 
 
 @pytest.fixture
 def runner(app):
+    """ Provide a simulated cli client for local testing. """
     return app.test_cli_runner()
