@@ -7,10 +7,6 @@ with open('README.md', 'r', encoding='utf-8') as fp:
 with open('requirements.txt', 'r', encoding='utf-8') as fp:
     requirements = fp.read().splitlines()
 
-with open('requirements-dev.txt', 'r', encoding='utf-8') as fp:
-    requirements_dev = fp.read().splitlines()
-
-
 setup(
     author='Thomas Steinert',
     author_email='hello@chroni.cc',
@@ -18,10 +14,7 @@ setup(
         'Programming Language :: Python :: 3',
         'Operating System :: OS Independent',
     ],
-    description='API server for providing a centralised slothtamer data backend which can be used from multiple devices.',
-    extras_require={
-        'dev': requirements_dev
-    },
+    description='API server for providing a centralised slothtamer data backend.',
     install_requires=requirements,
     long_description=long_description,
     long_description_content_type='text/markdown',
