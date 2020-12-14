@@ -1,3 +1,5 @@
+""" Slothtamer Variable Collection """
+
 AUTHOR = 'Thomas Steinert'
 AUTHOR_MAIL = 'hello@chroni.cc'
 APP_NAME = 'slothtamer'

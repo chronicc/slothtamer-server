@@ -1,3 +1,6 @@
+# pylint: disable=E1101
+""" Task Model """
+
 from datetime import datetime as dt
 from datetime import timezone as tz
 from sqlalchemy.orm import validates
@@ -17,60 +20,65 @@ class Task(db.Model):
     created = db.Column(db.DateTime, default=dt.now(tz.utc))
     updated = db.Column(db.DateTime, default=dt.now(tz.utc), onupdate=dt.now(tz.utc))
 
-
     def __repr__(self):
         return "<Task(id='%s', title='%s', status='%s')>" % (
             self.id, self.title, self.status)
 
-
     def to_dict(self):
+        """ Return the whole task object as dictionary. """
         return dict(id=self.id, title=self.title, status=self.status,
                     created=self.created.isoformat(), updated=self.updated.isoformat())
 
-
     @classmethod
     def create(cls, params):
+        """ Create a task object in the database. """
         task = Task(**params)
         db.session.add(task)
         db.session.commit()
 
+    @classmethod
+    def read(cls, task_id):
+        """ Return a task object from the database. """
+        return Task.query.filter_by(id=task_id).first()
 
     @classmethod
-    def read(cls, id):
-        return Task.query.filter_by(id=id).first()
-
-
-    @classmethod
-    def update(cls, id, params):
-        task = Task.read(id)
+    def update(cls, task_id, params):
+        """ Change a task object in the database. """
+        task = Task.read(task_id)
         for key, value in params.items():
             setattr(task, key, value)
         db.session.commit()
 
-
     @classmethod
-    def delete(cls, id):
-        task = Task.read(id)
+    def delete(cls, task_id):
+        """ Remove a task object from the database. """
+        task = Task.read(task_id)
         db.session.delete(task)
         db.session.commit()
 
-
+    @classmethod
     @validates('title')
-    def validate_title(self, key, title):
+    def validate_title(cls, key, title):
+        """ Validate the title parameter of the task object. """
+        del key
         assert title != '', 'Title must not be empty'
         try:
             title = str(title)
-        except ValueError:
-            raise AssertionError('Title must be of type string')
+        except ValueError as exception:
+            raise AssertionError('Title must be of type string') from exception
+            #raise AssertionError from e
         return title
 
-
+    @classmethod
     @validates('status')
-    def validate_status(self, key, status):
+    def validate_status(cls, key, status):
+        """ Validate the status parameter of the task object. """
+        del key
         assert status != '', 'Status must not be empty'
         try:
             status = int(status)
-        except ValueError:
-            raise AssertionError('Status must be of type integer')
+        except ValueError as exception:
+            raise AssertionError('Status must be of type integer') from exception
+            #raise AssertionError from e
         assert status >= 0, 'Status must be a positive integer'
         return status

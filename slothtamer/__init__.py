@@ -1,3 +1,6 @@
+# pylint: disable=E1101
+""" Slothtamer Application """
+
 import os
 
 from flask import Flask
@@ -14,8 +17,7 @@ def config_set_default(param, default):
     """ Return the value of an environment variable or default if not defined."""
     if param in os.environ:
         return os.environ[param]
-    else:
-        return default
+    return default
 
 
 def create_app(config=None):
@@ -53,6 +55,7 @@ def create_app(config=None):
         print('INFO: No database file found. Initializing database.')
         with app.app_context():
             db.create_all()
+            # noinspection PyArgumentList
             db.session.add(User(api_key=app.config['API_KEY']))
             db.session.commit()
         print('INFO: Database initialized.')
@@ -62,7 +65,7 @@ def create_app(config=None):
     auth.init_app(app)
 
     @auth.request_loader
-    def request_loader(request):
+    def _request_loader(request):
         api_key = request.headers.get('Authorization')
         return User.query.filter_by(api_key=api_key).first()
 

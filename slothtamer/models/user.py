@@ -1,3 +1,6 @@
+#pylint: disable=E1101
+""" User Model """
+
 from datetime import datetime as dt
 from datetime import timezone as tz
 from flask_login import UserMixin
@@ -16,11 +19,10 @@ class User(db.Model, UserMixin):
     created = db.Column(db.DateTime, default=dt.now(tz.utc))
     updated = db.Column(db.DateTime, default=dt.now(tz.utc), onupdate=dt.now(tz.utc))
 
-
     def __repr__(self):
         return "<User(id='%s', api_key='%s')>" % (self.id, self.api_key)
 
-
     def to_dict(self):
+        """ Return the whole user object as dictionary. """
         return dict(id=self.id, api_key=self.api_key, created=self.created.isoformat(),
                     updated=self.updated.isoformat())

@@ -1,3 +1,5 @@
+""" Task View """
+
 from flask import jsonify, request, make_response
 from flask.views import MethodView
 from flask_login import login_required
@@ -8,23 +10,25 @@ from slothtamer.models.task import Task
 class TasksView(MethodView):
     """ Tasks View """
 
+    @classmethod
     @login_required
-    def get(self, id=None):
-        if id == None:
+    def get(cls, task_id=None):
+        """ Return one or multiple tasks. """
+        if task_id is None:
             return make_response(jsonify([row.to_dict() for row in Task.query.all()]))
-        else:
-            return make_response(jsonify(Task.read(id).to_dict()))
+        return make_response(jsonify(Task.read(task_id).to_dict()))
 
-
+    @classmethod
     @login_required
-    def post(self):
+    def post(cls):
+        """ Create a new task. """
         params = dict()
 
         try:
             params['title'] = request.form['title']
         except KeyError:
             return make_response(jsonify('Title missing in request'), 400)
-        
+
         try:
             params['status'] = request.form['status']
         except KeyError:
@@ -37,16 +41,17 @@ class TasksView(MethodView):
 
         return make_response(jsonify('OK'))
 
-
+    @classmethod
     @login_required
-    def patch(self, id):
+    def patch(cls, task_id):
+        """ Change the properties of a task. """
         params = dict()
 
         try:
             params['title'] = request.form['title']
         except KeyError:
             pass
-        
+
         try:
             params['status'] = request.form['status']
         except KeyError:
@@ -54,16 +59,17 @@ class TasksView(MethodView):
 
         if len(params) == 0:
             return make_response(jsonify('Nothing to update'))
-        
+
         try:
-            Task.update(id, params)
+            Task.update(task_id, params)
         except AssertionError as err:
             return make_response(jsonify('Malformed request: %s' % err), 400)
 
         return jsonify('OK')
 
-
+    @classmethod
     @login_required
-    def delete(self, id):
-        Task.delete(id)
+    def delete(cls, task_id):
+        """ Delete a task. """
+        Task.delete(task_id)
         return make_response(jsonify('OK'))
