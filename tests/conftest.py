@@ -1,3 +1,6 @@
+#pylint: disable=W0621
+""" Basic setup for pytest. """
+
 import pytest
 
 from flask.testing import FlaskClient

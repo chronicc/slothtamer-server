@@ -5,6 +5,7 @@ import os
 
 from flask import Flask
 from flask_login import LoginManager
+from sqlalchemy.exc import OperationalError
 
 from slothtamer.lib.database import db
 from slothtamer.models.task import Task
@@ -20,11 +21,14 @@ def config_set_default(param, default):
     return default
 
 
-def create_app(config=None):
+def create_app(config=None, instance_path=None):
     """ Create an instance of the application. """
 
     # Application
-    app = Flask(__name__)
+    if instance_path is not None:
+        app = Flask(__name__, instance_path=instance_path)
+    else:
+        app = Flask(__name__)
 
     if config is None:
         config_mapping = {
@@ -32,7 +36,7 @@ def create_app(config=None):
             'DEBUG': config_set_default('SLOTHTAMER_DEBUG', True),
             'SECRET_KEY': config_set_default('SLOTHTAMER_SECRET_KEY', os.urandom(16)),
             'SQLALCHEMY_DATABASE_URI': config_set_default(
-                'SLOTHTAMER_DATABASE_URI', 'sqlite:///%s/slothtamer.db' % app.instance_path),
+                'SLOTHTAMER_DATABASE_URI', 'sqlite:///:memory:'),
             'SQLALCHEMY_TRACK_MODIFICATIONS': False,
         }
     else:
@@ -42,23 +46,24 @@ def create_app(config=None):
     print('INFO: Checking for application instance path: %s' % app.instance_path)
     try:
         os.makedirs(app.instance_path)
-    except OSError:
-        print('INFO: Application instance path already existing.')
-    else:
         print('INFO: Application instance path created.')
+    except OSError:
+        print('INFO: Application instance path already existing.')        
 
     # Database
     db.init_app(app)
-    if os.path.exists(os.path.join(app.instance_path, 'slothtamer.db')):
-        print('INFO: Found a database file.')
-    else:
-        print('INFO: No database file found. Initializing database.')
-        with app.app_context():
+    with app.app_context():
+        try:
+            User.query.first()
+            print('INFO: Database already initialized.')
+        except OperationalError:
+            print('INFO: Initializing database.')
             db.create_all()
+            # This is a known bug
             # noinspection PyArgumentList
             db.session.add(User(api_key=app.config['API_KEY']))
             db.session.commit()
-        print('INFO: Database initialized.')
+            print('INFO: Database initialized.')
 
     # Authorization
     auth = LoginManager()
