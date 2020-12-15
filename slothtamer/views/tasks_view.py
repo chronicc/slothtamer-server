@@ -16,6 +16,7 @@ class TasksView(MethodView):
         """ Return one or multiple tasks. """
         if task_id is None:
             return make_response(jsonify([row.to_dict() for row in Task.query.all()]))
+
         try:
             return make_response(jsonify(Task.read(task_id).to_dict()))
         except AttributeError:
@@ -61,7 +62,7 @@ class TasksView(MethodView):
             pass
 
         if len(params) == 0:
-            return make_response(jsonify('Nothing to update'))
+            return make_response(jsonify('Nothing to update'), 200)
 
         try:
             Task.update(task_id, params)

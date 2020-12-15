@@ -48,7 +48,7 @@ def create_app(config=None, instance_path=None):
         os.makedirs(app.instance_path)
         print('INFO: Application instance path created.')
     except OSError:
-        print('INFO: Application instance path already existing.')        
+        print('INFO: Application instance path already existing.')
 
     # Database
     db.init_app(app)

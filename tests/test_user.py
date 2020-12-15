@@ -1,7 +1,5 @@
 """ Test the user model and view. """
 
-import json
-
 from slothtamer.models.user import User
 
 

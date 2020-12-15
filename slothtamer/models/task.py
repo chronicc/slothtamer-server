@@ -56,27 +56,23 @@ class Task(db.Model):
         db.session.delete(task)
         db.session.commit()
 
-    @classmethod
+    # pylint: disable=R0201
     @validates('title')
-    def validate_title(cls, key, title):
+    def validate_title(self, key, title):
         """ Validate the title parameter of the task object. """
         del key
         assert title != '', 'Title must not be empty'
-        try:
-            title = str(title)
-        except ValueError as exception:
-            raise AssertionError('Title must be of type string') from exception
-        return title
+        return str(title)
 
-    @classmethod
     @validates('status')
-    def validate_status(cls, key, status):
+    def validate_status(self, key, status):
         """ Validate the status parameter of the task object. """
         del key
         assert status != '', 'Status must not be empty'
         try:
             status = int(status)
         except ValueError as exception:
-            raise AssertionError('Status must be of type integer') from exception
+            raise AssertionError('Can\'t convert status to type integer') from exception
         assert status >= 0, 'Status must be a positive integer'
         return status
+    # pylint: enable=R0201

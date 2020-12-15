@@ -4,8 +4,6 @@ import os
 import shutil
 
 from slothtamer import config_set_default, create_app
-from slothtamer.lib.database import db
-from slothtamer.models.user import User
 
 
 def test_environment_configuration():
