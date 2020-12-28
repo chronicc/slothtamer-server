@@ -2,6 +2,7 @@ coverage
 Flask
 Flask-Login
 Flask-SQLAlchemy
+nltk
 pylint
 pytest
 python-dotenv
