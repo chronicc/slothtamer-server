@@ -2,7 +2,8 @@
 
 import json
 
-from datetime import datetime
+from datetime import datetime as dt
+from datetime import timezone as tz
 
 from slothtamer.models.task import Task
 
@@ -23,6 +24,9 @@ def test_task_lifecycle(client, app):
     with app.app_context():
         task = Task.query.filter_by(title=title).first()
         assert str(task) == '<Task(id=\'1\', title=\'%s\', status=\'0\')>' % title
+        assert task.due_date > dt.now(tz.utc)
+        assert task.created <= dt.now(tz.utc)
+        assert task.created <= dt.now(tz.utc)
 
     # GET id
     response = client.get(TASK_ROUTE)
@@ -31,8 +35,9 @@ def test_task_lifecycle(client, app):
     assert data['id'] == 1
     assert data['title'] == title
     assert data['status'] == 0
-    assert isinstance(datetime.fromisoformat(data['created']), datetime)
-    assert isinstance(datetime.fromisoformat(data['updated']), datetime)
+    assert data['dueDate'] != ''
+    assert data['created'] != ''
+    assert data['updated'] != ''
 
     # GET list
     response = client.get(TASKS_ROUTE)
@@ -90,30 +95,28 @@ def test_task_without_title_error(client):
 
 
 def test_task_malformed_request_on_create(client):
-    """ Test validation if task fields. """
+    """ Test validation of task fields. """
 
     # Empty status
     response = client.post(TASKS_ROUTE, data={'title': 'Foobar', 'status': ''})
     data = json.loads(response.get_data().decode('utf-8'))
     assert response.status_code == 400
-    assert data == ('Malformed request: Status must not be empty')
+    assert data == 'Malformed request: Status must not be empty'
 
     # Non convertable to integer
     response = client.post(TASKS_ROUTE, data={'title': 'Foobar', 'status': 'Foobar'})
     data = json.loads(response.get_data().decode('utf-8'))
     assert response.status_code == 400
-    assert data == ('Malformed request: Can\'t convert status to type integer')
+    assert data == 'Malformed request: Can\'t convert status to type integer'
 
     # Negative number
     response = client.post(TASKS_ROUTE, data={'title': 'Foobar', 'status': -1})
     data = json.loads(response.get_data().decode('utf-8'))
     assert response.status_code == 400
-    assert data == ('Malformed request: Status must be a positive integer')
+    assert data == 'Malformed request: Status must be a positive integer'
 
-
-# def test_task_create_wrong(client, app):
-#     """ Test if the task view is safe against wrong methods."""
-#     title = 'Don\'t accept wrong method'
-#     client.get('/tasks/', data={'title': title})
-#     with app.app_context():
-#         assert Task.query.filter_by(title=title).first() is None
+    # Non normalizable due date
+    response = client.post(TASKS_ROUTE, data={'title': 'Foobar', 'dueDate': 'morgen'})
+    data = json.loads(response.get_data().decode('utf-8'))
+    assert response.status_code == 400
+    assert data == 'Malformed request: Wrong format for due date'

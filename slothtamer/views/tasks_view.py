@@ -39,6 +39,11 @@ class TasksView(MethodView):
             pass
 
         try:
+            params['due_date'] = request.form['dueDate']
+        except KeyError:
+            pass
+
+        try:
             Task.create(params)
         except AssertionError as err:
             return make_response(jsonify('Malformed request: %s' % err), 400)
@@ -58,6 +63,11 @@ class TasksView(MethodView):
 
         try:
             params['status'] = request.form['status']
+        except KeyError:
+            pass
+
+        try:
+            params['due_date'] = request.form['dueDate']
         except KeyError:
             pass
 

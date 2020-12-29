@@ -5,4 +5,5 @@ Flask-SQLAlchemy
 pylint
 pytest
 python-dotenv
+pytz
 waitress
